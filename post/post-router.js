@@ -4,6 +4,7 @@ const Posts = require('../data/db.js');
 
 const router = express.Router();
 
+
 // GET at /api/posts
 
 router.get('/', async (req, res) => {
@@ -18,6 +19,7 @@ router.get('/', async (req, res) => {
         });
     }
 });
+
 
 // GET by ID at /api/posts/:id
 
@@ -39,22 +41,71 @@ router.get('/:id', async (req, res) => {
     }
   });
 
+  //GET at /api/posts:id/comments
+  router.get('/:id/comments', async (req,res) => {
+    const { id } = req.params;
+
+    try {
+        const comments = await Hubs.findPostComments(id);
+
+        if (comments.length) {
+            res.json(comments);
+        } else {
+            res.status(404).json({ message: "The post with the specified ID does not exist." });
+        }
+    } catch (err) {
+        res.status(500).json({ error: "The comments information could not be retrieved." })
+    }
+});
+
+
   // POST at /api/posts
 
   router.post('/', async (req, res) => {
+    const { title, contents } = req.body;
     try {
-      const post = await Posts.insert(req.body);
-      res.status(201).json(post);
+      if ( title && contents) {
+        const post = await Posts.insert(req.body);
+        res.status(201).json(post);
+      } else {
+        res.status(400).json({ error: "Please provide title and contents for the post." })
+      }
     } catch (error) {
       // log error to database
       console.log(error);
       res.status(500).json({
-        message: 'Error adding the post',
+        error: "There was an error while saving the post to the database" ,
       });
     }
   });
 
-  // PUT 
+
+  // POST at api/posts/:id/comments
+
+  router.post('/:id/comments', async (req, res) => {
+    const commentInfo = { ...req.body, post_id: req.params.id };
+    const { id } = reqs.params.id;
+    const { text } = reqs.body;
+    
+    try {
+      if (!id) {
+        res.status(404).json({ message: "The post with the specified ID does not exist." })
+      } else if (!text) {
+        res.status(400).json({ errorMessage: "Please provide text for the comment." })
+      } else {
+        const saved = await Posts.insertComment(commentInfo);
+        res.status(201).json(saved);
+      }
+    } catch (err) {
+        res.status(500).json({
+            error: "There was an error while saving the comment to the database",
+            err
+        });
+    }
+});
+
+
+  // PUT at api/posts/:id
 
   router.put('/:id', async (req, res) => {
     try {
