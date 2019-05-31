@@ -13,7 +13,7 @@ server.use('/api/posts', PostsRouter);
 server.get('/', (req, res) => {
   res.send(`
     <h2>Lambda Posts API!</h2>
-    <p>Welcome to the Lambda Posts API</p>
+    <p>Welcome to the Webapi-IV-challenge API</p>
   `);
 });
 
